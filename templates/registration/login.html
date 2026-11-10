@@ -1,0 +1,8 @@
+{% extends "base.html" %}{% block content %}
+<div class="login-wrap"><form method="post" class="login-card">{% csrf_token %}
+<a class="brand" href="/"><span class="brand-mark">G</span><span>GOLDEN GYM<small>ONE LOGIN · OWNER · MEMBER · TRAINER</small></span></a>
+<h1>Welcome back.</h1><p>Sign in with your assigned account. We'll open the correct portal automatically.</p>
+{% if form.errors %}<p class="error">Your username or password was not recognized.</p>{% endif %}
+<label>Username</label>{{ form.username }}<label>Password</label>{{ form.password }}
+<button class="button button-dark" type="submit">Sign in ↗</button><a class="under-link" href="/">Back to website</a>
+</form></div>{% endblock %}

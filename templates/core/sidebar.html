@@ -1,0 +1,13 @@
+<div class="admin-shell">
+  <button class="admin-menu-toggle" type="button" aria-expanded="false" aria-controls="admin-sidebar" id="adminMenuToggle">
+    <span aria-hidden="true">☰</span> <span>Menu</span>
+  </button>
+  <aside class="sidebar" id="admin-sidebar">
+    <a class="brand" href="/"><span class="brand-mark">G</span><span>GOLDEN GYM<small>MANAGEMENT</small></span></a>
+    <p class="side-label">WORKSPACE</p>
+    <a href="/dashboard/">Overview</a><a href="/dashboard/members/">Members</a>
+    <a href="/dashboard/attendance/">Attendance</a><a href="/dashboard/payments/">Payments</a><a href="/dashboard/refunds/">Refund requests</a>
+    <a href="/dashboard/trainers/">Trainers</a><a href="/dashboard/enquiries/">Enquiries</a>
+    <a href="/dashboard/workouts/">Workouts</a><a href="/dashboard/inventory/">Inventory</a><a href="/dashboard/expenses/">Expenses</a><a href="/dashboard/staff/">Staff directory</a><a href="/admin/">Django admin ↗</a>
+    <form method="post" action="/accounts/logout/">{% csrf_token %}<button class="logout" type="submit">Sign out</button></form>
+  </aside>

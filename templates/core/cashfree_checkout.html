@@ -1,0 +1,28 @@
+{% extends "base.html" %}{% block content %}
+<div class="login-wrap"><div class="login-card">
+<a class="brand" href="/"><span class="brand-mark">G</span><span>{{ site.gym_name|upper }}<small>SECURE ONLINE CHECKOUT</small></span></a>
+<p class="eyebrow">REMOTE MEMBERSHIP PAYMENT</p><h1>Complete your membership.</h1>
+<p><strong>Order summary</strong></p><p>{{ plan.name }} · ₹{{ payment.amount|floatformat:2 }}</p><p>Review the membership and amount before selecting <strong>Continue to secure payment</strong>.</p>
+<p>Pay securely from anywhere using the payment methods enabled on your Cashfree merchant account.</p>
+<button id="pay-button" class="button button-dark" type="button">PAY ONLINE SECURELY ↗</button>
+<p class="fine-print">Your membership activates only after Golden Gym verifies successful payment directly with Cashfree. Do not close the page while checkout is opening.</p>
+<p><a class="under-link" href="/">Return to Golden Gym</a></p>
+</div></div>
+<script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
+<script>
+const cashfree = Cashfree({ mode: "{{ cashfree_mode|escapejs }}" });
+document.getElementById("pay-button").addEventListener("click", async () => {
+  const button = document.getElementById("pay-button");
+  button.disabled = true; button.textContent = "Opening secure checkout…";
+  try {
+    await cashfree.checkout({
+      paymentSessionId: "{{ payment_session_id|escapejs }}",
+      redirectTarget: "_self"
+    });
+  } catch (error) {
+    button.disabled = false; button.textContent = "Try secure payment again ↗";
+    alert("Checkout could not be opened. Please try again or contact Golden Gym.");
+  }
+});
+</script>
+{% endblock %}

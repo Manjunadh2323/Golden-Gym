@@ -1,0 +1,19 @@
+{% extends "base.html" %}{% block content %}
+<div class="login-wrap"><div class="login-card"><a class="brand" href="/"><span class="brand-mark">G</span><span>{{ site.gym_name|upper }}<small>SECURE CHECKOUT</small></span></a>
+<h1>Complete your membership.</h1><p>{{ plan.name }} · ₹{{ plan.price|floatformat:0 }}</p>
+<button id="pay-button" class="button button-dark">PAY ONLINE SECURELY WITH RAZORPAY ↗</button>
+<p class="fine-print">Your membership activates only after the server verifies the payment signature.</p></div></div>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+const options = {
+ key: "{{ key_id|escapejs }}", amount: "{{ order.amount }}", currency: "{{ order.currency }}",
+ name: "{{ site.gym_name|escapejs }}", description: "{{ plan.name|escapejs }} membership", order_id: "{{ order.id|escapejs }}",
+ method: { upi: true, card: true, netbanking: true, wallet: true },
+ handler: function (r) {
+   const f=document.createElement("form"); f.method="POST"; f.action="{% url 'verify_checkout' %}";
+   [["csrfmiddlewaretoken","{{ csrf_token }}"],["razorpay_order_id",r.razorpay_order_id],["razorpay_payment_id",r.razorpay_payment_id],["razorpay_signature",r.razorpay_signature]].forEach(([k,v])=>{const i=document.createElement("input");i.type="hidden";i.name=k;i.value=v;f.appendChild(i);});
+   document.body.appendChild(f); f.submit();
+ }, theme:{color:"#20201d"}
+};
+document.getElementById("pay-button").addEventListener("click",()=>new Razorpay(options).open());
+</script>{% endblock %}

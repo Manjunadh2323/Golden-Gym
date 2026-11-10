@@ -1,0 +1,8 @@
+{% extends "base.html" %}{% block content %}
+<div class="login-wrap"><form method="post" class="login-card">{% csrf_token %}
+<a class="brand" href="/"><span class="brand-mark">G</span><span>{{ site.gym_name|upper }}<small>MEMBERSHIP REGISTRATION</small></span></a>
+<p class="eyebrow">SELECTED MEMBERSHIP</p><h1>{{ plan.name }}</h1><p class="price">₹{{ plan.price|floatformat:0 }} <small>/ {{ plan.duration_months }} month(s)</small></p>
+<p>Create your member account, then continue directly to secure online payment. Your membership activates only after the payment gateway confirms payment.</p>
+{% for field in form %}<label>{{ field.label }}</label>{{ field }}{% for error in field.errors %}<small class="error">{{ error }}</small>{% endfor %}{% endfor %}
+{% if online_payment_ready %}<button class="button button-dark" type="submit">Register & Pay Online ↗</button>{% else %}<button class="button button-dark" type="submit">Create account ↗</button><p class="fine-print">Online payment is temporarily unavailable because the gym has not configured Cashfree or Razorpay credentials. Your account will be created as pending; contact the gym to complete payment.</p>{% endif %}<a class="under-link" href="/">Back to website</a>
+</form></div>{% endblock %}

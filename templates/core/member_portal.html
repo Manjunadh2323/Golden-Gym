@@ -1,0 +1,74 @@
+{% extends "base.html" %}{% block content %}
+<div class="portal-page">
+<header class="portal-top">
+  <a class="brand" href="/"><span class="brand-mark">G</span><span>{{ site.gym_name|upper }}<small>MEMBER PORTAL</small></span></a>
+  <nav style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+    <a class="text-link" href="/">HOME</a><a class="text-link" href="{% url 'profile_settings' %}">MY PROFILE</a>
+    <form method="post" action="/accounts/logout/">{% csrf_token %}<button type="submit" class="text-link">LOG OUT ↗</button></form>
+  </nav>
+</header>
+<div class="portal-content">
+<p class="eyebrow">YOUR FITNESS ACCOUNT</p><h1>Welcome, {{ request.user.first_name|default:request.user.username }}.</h1>
+{% if member %}
+<div class="portal-cards">
+  <article><span>MEMBERSHIP</span><h2>{{ member.plan.name|default:"Not assigned" }}</h2><p>Status: {{ member.get_status_display }}</p></article>
+  <article><span>VALID UNTIL</span><h2>{{ member.expires_on|date:"d M Y"|default:"Awaiting activation" }}</h2><p>Keep showing up. Progress follows.</p></article>
+</div>
+<div class="portal-cards">
+  <article><span>YOUR DIGITAL ENTRY PASS</span><h2>Gym QR pass</h2><p>Show this code at reception for attendance.</p><img src="{% url 'member_qr' %}" alt="Your member QR code" width="170" height="170" style="background:white;padding:10px;border-radius:8px"></article>
+  <article><span>QUICK ACTIONS</span><p><a class="button button-dark" href="{% url 'fitness_tracking' %}">Track fitness progress</a></p><p><a class="button button-dark" href="{% url 'profile_settings' %}">Edit my profile</a></p><p><a class="button button-dark" href="{% url 'renew_membership' %}#payment-confirm">Renew membership</a></p>
+      <p><button class="button button-dark" type="button" id="open-pay-now">Pay Now · ₹{{ member.plan.price|floatformat:2 }}</button></p>
+      <div id="payment-confirm" class="gg-pay-overlay" aria-hidden="true">
+        <section class="gg-pay-dialog" role="dialog" aria-modal="true" aria-labelledby="gg-pay-title">
+          <button type="button" class="gg-pay-close" id="close-pay-now" aria-label="Close">×</button>
+          <p class="eyebrow">GOLDEN GYM · SECURE CHECKOUT</p>
+          <h2 id="gg-pay-title">Confirm your membership payment</h2>
+          <p>You're about to renew your <strong>{{ member.plan.name }}</strong> membership.</p>
+          <div class="gg-pay-summary">
+            <span>Membership plan</span><strong>{{ member.plan.name }}</strong>
+            <span>Duration</span><strong>{{ member.plan.duration_months }} month(s)</strong>
+            <span>Total due today</span><strong>₹{{ member.plan.price|floatformat:2 }}</strong>
+          </div>
+          <p class="gg-pay-note">After you continue, Cashfree or Razorpay will open its secure checkout. Choose UPI, scan a QR code where offered, or use another available payment method. Your membership activates only after the gateway confirms payment.</p>
+          <form method="post" action="{% url 'renew_membership' %}">
+            {% csrf_token %}
+            <button class="button button-dark gg-pay-submit" type="submit">Confirm &amp; Pay Now →</button>
+          </form>
+          <button type="button" class="gg-pay-cancel" id="cancel-pay-now">Cancel</button>
+        </section>
+      </div>
+      <style>
+        .gg-pay-overlay{display:none;position:fixed;inset:0;z-index:9999;background:rgba(10,12,16,.72);align-items:center;justify-content:center;padding:18px}
+        .gg-pay-overlay.is-open{display:flex}
+        .gg-pay-dialog{position:relative;width:min(100%,470px);background:#fff;color:#171717;border-radius:14px;padding:30px;box-shadow:0 24px 80px rgba(0,0,0,.3)}
+        .gg-pay-dialog h2{font-size:25px;line-height:1.2;margin:8px 0 12px}
+        .gg-pay-close{position:absolute;right:14px;top:10px;border:0;background:transparent;font-size:28px;cursor:pointer}
+        .gg-pay-summary{display:grid;grid-template-columns:1fr auto;gap:12px;padding:17px;background:#f4f4f1;border-radius:9px;margin:18px 0}
+        .gg-pay-summary span{color:#686868}.gg-pay-summary strong{text-align:right}
+        .gg-pay-note{font-size:13px;line-height:1.6;color:#555}
+        .gg-pay-submit{width:100%;margin-top:12px}.gg-pay-cancel{width:100%;border:0;background:transparent;padding:13px;cursor:pointer}
+        body.gg-pay-lock{overflow:hidden}
+      </style>
+      <script>
+        (() => {
+          const modal=document.getElementById('payment-confirm');
+          const open=document.getElementById('open-pay-now');
+          const close=()=>{modal.classList.remove('is-open');modal.setAttribute('aria-hidden','true');document.body.classList.remove('gg-pay-lock');};
+          open?.addEventListener('click',()=>{modal.classList.add('is-open');modal.setAttribute('aria-hidden','false');document.body.classList.add('gg-pay-lock');});
+          document.getElementById('close-pay-now')?.addEventListener('click',close);
+          document.getElementById('cancel-pay-now')?.addEventListener('click',close);
+          modal?.addEventListener('click',e=>{if(e.target===modal)close();});
+          document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal?.classList.contains('is-open'))close();});
+        })();
+      </script></article>
+</div>
+{% if notifications %}<h2>Notifications</h2>{% for n in notifications %}<article class="admin-panel" style="margin:10px 0"><strong>{{ n.title }}</strong><p>{{ n.message }}</p><form method="post" action="{% url 'notification_read' n.id %}">{% csrf_token %}<button class="text-link">Mark as read</button></form></article>{% endfor %}{% endif %}
+<h2>Your workout plans</h2>
+{% for plan in workouts %}<article class="admin-panel" style="margin:12px 0"><h3>{{ plan.name }}</h3><p>{{ plan.description }}</p>{% for item in plan.items.all %}<p><strong>{{ item.day_label|default:"Workout" }} · {{ item.exercise.name }}</strong> — {{ item.sets }} sets × {{ item.reps }} reps · Rest {{ item.rest_seconds }} sec</p>{% empty %}<p>Exercises will be added by your trainer.</p>{% endfor %}</article>{% empty %}<p>Your trainer's workout plans will appear here.</p>{% endfor %}
+<h2>Fitness progress</h2><p><a class="under-link" href="{% url 'fitness_tracking' %}">Add a measurement and view your progress →</a></p>
+{% if measurements %}<div class="table-wrap"><table><tr><th>Date</th><th>Weight</th><th>Waist</th><th>Body fat</th></tr>{% for m in measurements %}<tr><td>{{ m.recorded_on }}</td><td>{{ m.weight_kg|default:"—" }} kg</td><td>{{ m.waist_cm|default:"—" }} cm</td><td>{{ m.body_fat_percent|default:"—" }}%</td></tr>{% endfor %}</table></div>{% endif %}
+<h2>Membership history</h2><div class="table-wrap"><table><tr><th>Plan</th><th>Start date</th><th>End date</th></tr>{% for period in periods %}<tr><td>{{ period.plan.name }}</td><td>{{ period.starts_on }}</td><td>{{ period.ends_on }}</td></tr>{% empty %}<tr><td colspan="3">Membership history will appear after the first confirmed payment.</td></tr>{% endfor %}</table></div>
+<h2>Payment history</h2><div class="table-wrap"><table><tr><th>Date</th><th>Amount</th><th>Status</th><th>Method</th><th>Receipt</th></tr>{% for p in payments %}<tr><td>{{ p.paid_on }}</td><td>₹{{ p.amount }}</td><td>{{ p.get_status_display }}</td><td>{{ p.get_method_display }}</td><td>{% if p.status == "paid" %}<a href="{% url 'payment_receipt' p.id %}">Download PDF</a>{% else %}—{% endif %}{% if p.id in refundable_payment_ids %}<form method="post" action="{% url 'request_refund' p.id %}" style="margin-top:6px">{% csrf_token %}<input name="reason" required minlength="5" maxlength="1000" placeholder="Reason for refund" aria-label="Reason for refund" style="max-width:180px"><button class="text-link" type="submit">Request refund</button></form>{% endif %}{% for r in p.refund_requests.all %}<small>Refund: {{ r.get_status_display }}</small>{% endfor %}</td></tr>{% empty %}<tr><td colspan="5">No payments yet.</td></tr>{% endfor %}</table></div>
+{% else %}<p>Your account is not linked to a membership yet. Please contact the gym team.</p>{% endif %}
+<p style="margin-top:28px"><a class="button button-dark" href="/">← Back to Golden Gym Home</a></p>
+</div></div>{% endblock %}

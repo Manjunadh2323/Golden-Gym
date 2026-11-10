@@ -1,0 +1,18 @@
+Golden Gym V4.0 - Update report
+
+Implemented in this package:
+- Cashfree refund request model and migration (0008_refund_requests).
+- Member refund request action for paid Cashfree gateway payments within 7 calendar days.
+- Owner dashboard page to approve, reject, and refresh Cashfree refund status.
+- Cashfree create-refund and fetch-refund API helpers with a stable refund identifier.
+- Original payment is marked refunded only after Cashfree reports SUCCESS.
+- Public membership CTA now reads "Join & Pay Online".
+- Member checkout page explains the plan/amount before the secure payment button.
+- Existing project database retained as supplied.
+- Real .env excluded; configure credentials from .env.example.
+
+Validation:
+- Python source compilation passed.
+- Static wiring checks passed for model, migration, routes, views, admin, templates and Cashfree helpers.
+- Full Django manage.py check/migrate and browser end-to-end tests could not be run in this environment because Django dependencies are not installed here and network access to install them is unavailable.
+- Cashfree Sandbox refund execution is not verified against the merchant account. Test with regenerated Sandbox credentials before production.

@@ -1,0 +1,8 @@
+﻿venv/
+.env
+__pycache__/
+*.py[cod]
+db.sqlite3
+db_v21.sqlite3
+staticfiles/
+media/

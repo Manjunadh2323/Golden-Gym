@@ -1,0 +1,22 @@
+{% extends "base.html" %}{% block content %}{% include "core/sidebar.html" %}<main class="admin-main"><p class="eyebrow">WORKSPACE / FINANCE</p><h1>Payments</h1><p><a class="button button-dark" href="{% url 'refund_requests' %}">Review refund requests</a></p><p class="muted">Record gym-counter payments for registered members or walk-in customers. Cashfree handles online membership checkout when configured; only verified online payments activate memberships.</p><form method="post" class="admin-form payment-entry-form">{% csrf_token %}{{ form.as_p }}<p class="muted">For a walk-in payment, enter the payer's name. A phone number is optional. This records a payment only and does not create a membership.</p><button class="button button-dark">Save payment record</button></form><section class="admin-panel"><h2>Recent transactions</h2><table><tr><th>PAYER</th><th>AMOUNT</th><th>METHOD</th><th>STATUS</th><th>DATE</th><th>REFERENCE</th><th>RECEIPT</th></tr>{% for p in records %}<tr><td>{% if p.member_id %}{{ p.member.full_name }}{% else %}{{ p.payer_name|default:"Walk-in" }}{% endif %}</td><td>₹{{ p.amount }}</td><td>{{ p.get_method_display }}</td><td>{{ p.get_status_display }}</td><td>{{ p.paid_on }}</td><td>{{ p.reference|default:"—" }}</td><td>{% if p.status == "paid" %}<a href="{% url 'owner_payment_receipt' p.id %}">PDF</a>{% else %}—{% endif %}</td></tr>{% empty %}<tr><td colspan="7">No payments recorded.</td></tr>{% endfor %}</table></section></main></div><script>
+(() => {
+  const type = document.getElementById("id_payment_type");
+  const member = document.getElementById("id_member");
+  const payer = document.getElementById("id_payer_name");
+  const phone = document.getElementById("id_payer_phone");
+  if (!type || !member || !payer || !phone) return;
+  const memberRow = member.closest("p");
+  const payerRow = payer.closest("p");
+  const phoneRow = phone.closest("p");
+  const update = () => {
+    const walkin = type.value === "walkin";
+    if (memberRow) memberRow.hidden = walkin;
+    if (payerRow) payerRow.hidden = !walkin;
+    if (phoneRow) phoneRow.hidden = !walkin;
+    member.required = !walkin;
+    payer.required = walkin;
+  };
+  type.addEventListener("change", update);
+  update();
+})();
+</script>{% endblock %}
